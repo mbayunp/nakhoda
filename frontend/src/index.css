@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply font-sans text-gray-800 bg-white antialiased;
+    overflow-x: hidden;
+  }
+  ::selection {
+    @apply bg-primary/20 text-primary-dark;
+  }
+}
+
+@layer components {
+  /* Buttons — gold accent system */
+  .btn-primary {
+    @apply bg-primary text-secondary font-bold shadow-md
+           hover:bg-primary-dark hover:shadow-glow hover:scale-105
+           active:scale-95
+           transition-all duration-300 ease-in-out;
+  }
+  .btn-secondary {
+    @apply bg-secondary text-white shadow-md
+           hover:bg-secondary-light hover:shadow-lg hover:scale-105
+           active:scale-95
+           transition-all duration-300 ease-in-out;
+  }
+
+  /* Layout — mobile-first spacing */
+  .section {
+    @apply py-14 md:py-20 lg:py-28;
+  }
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Page Headers — dark brown with gold accents */
+  .page-header {
+    @apply relative bg-secondary text-white pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden;
+  }
+  .page-header::before {
+    content: '';
+    @apply absolute inset-0 opacity-[0.03];
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Form inputs — touch-friendly min-height */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50
+           focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white
+           outline-none transition-all duration-300
+           placeholder:text-gray-400 text-base;
+    min-height: 48px;
+  }
+
+  /* Section heading — gold accent labels */
+  .section-label {
+    @apply text-primary text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 block;
+  }
+  .section-title {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-secondary mb-4 md:mb-6 leading-tight;
+  }
+  .section-desc {
+    @apply text-gray-500 text-base md:text-lg leading-relaxed;
+  }
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
