@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Edit2, Trash2, X, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import DataTable from '../../components/admin/DataTable';
 import { portfolioAPI } from '../../services/api';
-import { IMG } from '../../utils/formatters';
 
 const CATS = ['Kemeja', 'Kaos', 'Jaket', 'Seragam', 'Merchandise', 'Lainnya'];
+
+// Base URL untuk akses gambar ke server backend
+const BACKEND_UPLOADS_URL = 'http://localhost:5000/uploads/';
+const API_URL = 'http://localhost:5000/api/portfolio';
 
 const Portfolio = () => {
   const [items, setItems] = useState([]);
@@ -32,36 +36,67 @@ const Portfolio = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openAdd = () => { setEditing(null); setForm({ title: '', description: '', category: 'Lainnya', is_featured: false }); setImageFile(null); setPreview(null); setModal(true); };
-  const openEdit = (item) => { setEditing(item); setForm({ title: item.title, description: item.description || '', category: item.category, is_featured: item.is_featured }); setImageFile(null); setPreview(item.image ? IMG(item.image) : null); setModal(true); };
+  const openAdd = () => {
+    setEditing(null);
+    setForm({ title: '', description: '', category: 'Lainnya', is_featured: false });
+    setImageFile(null);
+    setPreview(null);
+    setModal(true);
+  };
+
+  const openEdit = (item) => {
+    setEditing(item);
+    setForm({ title: item.title, description: item.description || '', category: item.category, is_featured: item.is_featured });
+    setImageFile(null);
+    setPreview(item.image ? `${BACKEND_UPLOADS_URL}${item.image}` : null);
+    setModal(true);
+  };
 
   const handleFile = (e) => {
     const file = e.target.files[0];
-    if (file) { setImageFile(file); setPreview(URL.createObjectURL(file)); }
+    if (file) {
+      // Cek size max 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        return Swal.fire({ icon: 'warning', title: 'Ukuran file terlalu besar (Maks 5MB)' });
+      }
+      setImageFile(file);
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.title.trim()) return Swal.fire({ icon: 'warning', title: 'Judul wajib diisi' });
+
+    // Validasi file wajib jika mode tambah
+    if (!editing && !imageFile) return Swal.fire({ icon: 'warning', title: 'Gambar wajib diupload' });
+
     setSaving(true);
     try {
       const fd = new FormData();
       fd.append('title', form.title);
       fd.append('description', form.description);
       fd.append('category', form.category);
-      fd.append('is_featured', form.is_featured);
+      fd.append('is_featured', form.is_featured ? 1 : 0); // Konversi boolean untuk FormData
       if (imageFile) fd.append('image', imageFile);
 
-      if (editing) { await portfolioAPI.update(editing.id, fd); }
-      else { await portfolioAPI.create(fd); }
+      // Konfigurasi Header Khusus Multipart
+      const config = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+      if (editing) {
+        await axios.put(`${API_URL}/${editing.id}`, fd, config);
+      } else {
+        await axios.post(API_URL, fd, config);
+      }
 
       Swal.fire({ icon: 'success', title: editing ? 'Portfolio diperbarui' : 'Portfolio ditambahkan', timer: 1500, showConfirmButton: false });
       setModal(false);
       fetchData();
     } catch (err) {
-      Swal.fire({ icon: 'error', title: 'Gagal menyimpan', text: err.response?.data?.message || 'Terjadi kesalahan' });
+      Swal.fire({ icon: 'error', title: 'Gagal menyimpan', text: err.response?.data?.message || 'Terjadi kesalahan server' });
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleDelete = async (item) => {
@@ -74,8 +109,15 @@ const Portfolio = () => {
     } catch { Swal.fire({ icon: 'error', title: 'Gagal menghapus' }); }
   };
 
+  // Penomoran baris untuk DataTable
+  const dataWithNo = items.map((item, index) => ({
+    ...item,
+    no: (page - 1) * 10 + index + 1
+  }));
+
   const columns = [
-    { key: 'image', label: 'Gambar', render: (v) => v ? <img src={IMG(v)} alt="" className="w-12 h-12 rounded-lg object-cover" /> : <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center"><ImageIcon size={16} className="text-gray-300" /></div> },
+    { key: 'no', label: 'No', render: (v) => <span className="text-gray-500 font-medium">{v}</span> },
+    { key: 'image', label: 'Gambar', render: (v) => v ? <img src={`${BACKEND_UPLOADS_URL}${v}`} alt="" className="w-12 h-12 rounded-lg object-cover border" onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Error' }} /> : <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center"><ImageIcon size={16} className="text-gray-300" /></div> },
     { key: 'title', label: 'Judul', render: (v) => <span className="font-semibold">{v}</span> },
     { key: 'category', label: 'Kategori', render: (v) => <span className="text-xs font-bold bg-brand/10 text-brand-dark px-2.5 py-1 rounded-lg">{v}</span> },
     { key: 'is_featured', label: 'Featured', render: (v) => v ? <span className="text-xs font-bold bg-green-50 text-green-600 px-2 py-1 rounded-lg">Ya</span> : <span className="text-xs text-gray-400">—</span> },
@@ -98,7 +140,7 @@ const Portfolio = () => {
       ) : (
         <DataTable
           columns={columns}
-          data={items}
+          data={dataWithNo}
           searchValue={search}
           onSearch={(v) => { setSearch(v); setPage(1); }}
           page={page}
@@ -113,7 +155,6 @@ const Portfolio = () => {
         />
       )}
 
-      {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <form onSubmit={handleSave} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
@@ -145,10 +186,10 @@ const Portfolio = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Gambar</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Gambar {!editing && '*'}</label>
                 {preview && <img src={preview} alt="Preview" className="w-full h-40 object-cover rounded-xl mb-2" />}
-                <label className="flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-brand/50 transition text-sm text-gray-500">
-                  <Upload size={16} /> Pilih Gambar
+                <label className="flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-brand/50 transition text-sm text-gray-500 bg-gray-50/50">
+                  <Upload size={16} /> Pilih Gambar Baru
                   <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
                 </label>
               </div>
