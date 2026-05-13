@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, X, Calculator, Loader2, Edit2, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import DataTable from '../../components/admin/DataTable';
-import { orderAPI } from '../../services/api';
+import { orderAPI, customerAPI } from '../../services/api';
 import { formatCurrency, statusColor, paymentColor, formatDate } from '../../utils/formatters';
 
 const STATUSES = ['pending', 'cutting', 'sewing', 'decorating', 'finishing', 'delivered', 'cancelled'];
@@ -108,6 +108,20 @@ const Orders = () => {
             </div>
             <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Pilih Pelanggan (Opsional)</label>
+                  <select 
+                    value={form.customer_id} 
+                    onChange={(e) => {
+                      const c = customers.find(x => x.id === +e.target.value);
+                      setForm({ ...form, customer_id: e.target.value, client_name: c ? c.name : form.client_name });
+                    }} 
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand outline-none text-sm"
+                  >
+                    <option value="">-- Pilih dari database --</option>
+                    {customers.map(c => <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>)}
+                  </select>
+                </div>
                 <div className="col-span-2"><label className="block text-xs font-semibold text-gray-600 mb-1">Nama Klien *</label><input value={form.client_name} onChange={(e) => setForm({ ...form, client_name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand outline-none text-sm" /></div>
                 <div><label className="block text-xs font-semibold text-gray-600 mb-1">Produk *</label><input value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand outline-none text-sm" /></div>
                 <div><label className="block text-xs font-semibold text-gray-600 mb-1">Qty</label><input type="number" value={form.qty} onChange={(e) => setForm({ ...form, qty: +e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand outline-none text-sm" /></div>
