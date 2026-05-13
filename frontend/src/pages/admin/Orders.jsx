@@ -18,7 +18,7 @@ const Orders = () => {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [customers, setCustomers] = useState([]);
-  const [form, setForm] = useState({ client_name:'', product:'', qty:0, deadline:'', status:'pending', payment_status:'belum', material_cost:0, sewing_cost:0, printing_cost:0, overhead:0, margin:20, notes:'', customer_id:'' });
+  const [form, setForm] = useState({ client_name: '', product: '', qty: 0, deadline: '', status: 'pending', payment_status: 'belum', material_cost: 0, sewing_cost: 0, printing_cost: 0, overhead: 0, margin: 20, notes: '', customer_id: '' });
   const [hppModal, setHppModal] = useState(false);
   const [hpp, setHpp] = useState({ material: 0, qty: 0, sewing: 0, printing: 0, overhead: 0, margin: 20 });
 
@@ -34,7 +34,7 @@ const Orders = () => {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  const loadCustomers = async () => { try { const { data } = await customerAPI.getAll({ limit: 100 }); setCustomers(data.data || []); } catch {} };
+  const loadCustomers = async () => { try { const { data } = await customerAPI.getAll({ limit: 100 }); setCustomers(data.data || []); } catch { } };
 
   const openAdd = () => { setEditing(null); setForm({ client_name: '', product: '', qty: 0, deadline: '', status: 'pending', payment_status: 'belum', material_cost: 0, sewing_cost: 0, printing_cost: 0, overhead: 0, margin: 20, notes: '', customer_id: '' }); loadCustomers(); setModal(true); };
   const openEdit = (item) => { setEditing(item); setForm({ client_name: item.client_name, product: item.product, qty: item.qty, deadline: item.deadline || '', status: item.status, payment_status: item.payment_status, material_cost: item.material_cost, sewing_cost: item.sewing_cost, printing_cost: item.printing_cost, overhead: item.overhead, margin: item.margin, notes: item.notes || '', customer_id: item.customer_id || '' }); loadCustomers(); setModal(true); };
