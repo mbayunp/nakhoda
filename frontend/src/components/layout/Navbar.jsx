@@ -12,7 +12,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, token, logout, isAuthenticated } = useAuthStore();
+  const { logout, isAuthenticated } = useAuthStore();
   const loggedIn = isAuthenticated();
 
   const links = [

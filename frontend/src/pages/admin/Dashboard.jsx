@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, DollarSign, AlertTriangle, TrendingUp, Clock, Package, Loader2 } from 'lucide-react';
 import MetricCard from '../../components/admin/MetricCard';
-import { BarChartCard, PieChartCard } from '../../components/admin/ChartCard';
+import { PieChartCard } from '../../components/admin/ChartCard';
 import { orderAPI, materialAPI } from '../../services/api';
 import { formatCurrency, statusColor, formatDate } from '../../utils/formatters';
 

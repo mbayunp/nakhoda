@@ -4,8 +4,11 @@ export const formatCurrency = (n) =>
 export const formatDate = (d) =>
   new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
+const BACKEND_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api')
+  .replace(/\/api\/?$/, '');
+
 export const IMG = (filename) =>
-  filename ? `http://localhost:5000/uploads/${filename}` : null;
+  filename ? `${BACKEND_URL}/uploads/${filename}` : null;
 
 export const statusColor = {
   pending: 'bg-yellow-100 text-yellow-700',
